@@ -83,9 +83,9 @@ dashboard "oci_compliance_diff_report" {
             column "reason"{
               wrap = "all"
             }
-            column "title"{
-              wrap = "all"
-            }
+            #column "title"{
+            #  wrap = "all"
+            #}
             column "control_title"{
               wrap = "all"
             }
@@ -118,7 +118,7 @@ query "resolved_issues" {
          resource,cis_type
          from report
          where run_id  = $1 and status in ('alarm','error')
-         and (resource,status,cis_item_id) in ( select resource,status,cis_item_id from  report where run_id=$2 and status = 'ok');
+         and (resource,status,cis_item_id) not in ( select resource,status,cis_item_id from  report where run_id=$2);
      EOQ
      param "run_id_1" {}
      param "run_id_2" {}
@@ -128,13 +128,13 @@ query "new_issues" {
      sql = <<-EOQ
          select run_id,
          title,
-         control_title,
+         --control_title,
          reason,
          status,
          resource,cis_type
          from report
          where run_id  = $2   and status in ('alarm','error')
-         and (resource,status,cis_item_id) not in ( select resource,status,cis_item_id from  report where run_id=$1);
+         and (resource,status,cis_item_id) not in ( select resource,status,cis_item_id from  report where run_id=$1) order by title;
      EOQ
      param "run_id_1" {}
      param "run_id_2" {}
@@ -150,7 +150,7 @@ query "unresolved_issues" {
          resource,cis_type
          from report
          where run_id  = $1 and status in ('alarm','error')
-         and (resource,status,cis_item_id) in ( select resource,status,cis_item_id from  report where run_id=$2 and status != 'ok');
+         and (resource,status,cis_item_id) in ( select resource,status,cis_item_id from  report where run_id=$2 and status != 'ok') order by title, control_title;
      EOQ
      param "run_id_1" {}
      param "run_id_2" {}
